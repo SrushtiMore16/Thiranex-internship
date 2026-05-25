@@ -34,17 +34,43 @@ A browser-based tool that evaluates the strength of user-entered passwords in re
 
 ---
 
+### ✅ Task 2 — Vulnerability Scanner
+**File:** `vulnerability_scanner.py`
+
+A Python-based CLI tool that scans a target website for common security vulnerabilities and generates a detailed HTML report.
+
+**Features:**
+- Scans 15 common ports (FTP, SSH, HTTP, MySQL, RDP etc.)
+- Checks for 7 critical security headers
+- Detects exposed software/server version information
+- Calculates an overall risk score (0–100)
+- Auto-generates a clean HTML vulnerability report
+
+**Concepts Learned:**
+- Port scanning and network security
+- HTTP security headers and their importance
+- Information leakage vulnerabilities
+- Penetration testing basics and vulnerability assessment
+
+**How to Run:**
+```bash
+pip3 install requests
+python3 vulnerability_scanner.py
+```
+
+---
+
 ## 🛠️ Tech Stack
-- HTML5, CSS3, Vanilla JavaScript
-- No frameworks or backend required for Task 1
+- HTML5, CSS3, Vanilla JavaScript — Task 1
+- Python 3, Requests library — Task 2
 
 ---
 
 ## 🚀 How to Run
 1. Clone or download this repository
-2. Open the relevant `.html` file in any browser
-3. No installation needed!
+2. For Task 1: open the `.html` file directly in any browser
+3. For Task 2: install requirements and run the Python script
 
 ---
 
-*Internship Period: 2025 | Organization: Thiranex*
+*Internship Period: 2025–2026 | Organization: Thiranex*
