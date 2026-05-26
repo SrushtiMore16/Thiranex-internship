@@ -60,16 +60,45 @@ python3 vulnerability_scanner.py
 
 ---
 
+### ✅ Task 3 — Phishing Email Detection Model
+**File:** `phishing_detector.py`
+
+A machine learning model built with Scikit-learn that classifies emails as Phishing or Safe with high accuracy.
+
+**Features:**
+- Trained on 80 emails (40 phishing + 40 safe)
+- TF-IDF text feature extraction with bigrams
+- Custom feature engineering (URL count, urgency words, suspicious TLDs)
+- Random Forest Classifier achieving 100% accuracy
+- Displays confusion matrix and classification report
+- Auto-generates a detailed HTML report
+
+**Concepts Learned:**
+- Machine learning for cybersecurity
+- TF-IDF vectorization and NLP basics
+- Feature engineering for email analysis
+- Model evaluation using accuracy, precision, recall and confusion matrix
+- Phishing attack patterns and detection techniques
+
+**How to Run:**
+```bash
+pip3 install scikit-learn pandas numpy matplotlib seaborn
+python3 phishing_detector.py
+```
+
+---
+
 ## 🛠️ Tech Stack
 - HTML5, CSS3, Vanilla JavaScript — Task 1
-- Python 3, Requests library — Task 2
+- Python 3, Requests — Task 2
+- Python 3, Scikit-learn, Pandas, NumPy, Matplotlib, Seaborn — Task 3
 
 ---
 
 ## 🚀 How to Run
 1. Clone or download this repository
 2. For Task 1: open the `.html` file directly in any browser
-3. For Task 2: install requirements and run the Python script
+3. For Task 2 & 3: install requirements and run the Python script
 
 ---
 
