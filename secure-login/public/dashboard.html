@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — Secure Login System</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="dashboard-body">
+  <div class="dashboard-wrapper">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+      <div>
+        <h1 style="font-size:20px; font-weight:600;">🔐 Dashboard</h1>
+        <p style="font-size:13px; color:var(--text-tertiary);">Thiranex Secure Login System</p>
+      </div>
+      <button class="btn btn-outline" style="width:auto; padding:0 16px;" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Account Info -->
+    <div class="card" style="margin-bottom:12px;">
+      <p class="section-label">Account Info</p>
+      <div class="info-row">
+        <span>Username</span>
+        <span id="usernameDisplay">—</span>
+      </div>
+      <div class="info-row">
+        <span>Email</span>
+        <span id="emailDisplay">—</span>
+      </div>
+      <div class="info-row">
+        <span>Member since</span>
+        <span id="createdAt">—</span>
+      </div>
+      <div class="info-row">
+        <span>2FA Status</span>
+        <span id="twoFAStatus">—</span>
+      </div>
+    </div>
+
+    <!-- 2FA Management -->
+    <div class="card" style="margin-bottom:12px;">
+      <p class="section-label">Two-Factor Authentication (2FA)</p>
+
+      <!-- Enable 2FA -->
+      <div id="enable2FASection">
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">
+          Add an extra layer of security. Scan the QR code with Google Authenticator or Authy.
+        </p>
+        <div class="alert alert-error" id="twoFAError"></div>
+        <div class="alert alert-success" id="twoFASuccess"></div>
+
+        <div id="qrSection" style="display:none;">
+          <div class="qr-box">
+            <img id="qrImage" src="" alt="QR Code"/>
+            <p style="font-size:12px; color:var(--text-tertiary); margin-top:8px;">Scan with Google Authenticator or Authy</p>
+            <p style="font-size:12px; color:var(--text-tertiary); margin-top:4px;">Or enter this secret manually:</p>
+            <div class="secret-text" id="secretText"></div>
+          </div>
+          <div class="form-group mt-2">
+            <label>Enter the 6-digit code from your app to confirm</label>
+            <input type="number" id="verifyOTP" placeholder="000000" style="text-align:center; font-size:18px; letter-spacing:4px;"/>
+          </div>
+          <div class="gap-2 mt-1">
+            <button class="btn btn-primary" onclick="enable2FA()">Confirm & Enable 2FA</button>
+          </div>
+        </div>
+
+        <div id="generate2FABtn">
+          <button class="btn btn-outline" onclick="setup2FA()">📱 Set Up 2FA</button>
+        </div>
+      </div>
+
+      <!-- Disable 2FA -->
+      <div id="disable2FASection" style="display:none;">
+        <p style="font-size:13px; color:var(--text-success); margin-bottom:12px;">
+          ✅ 2FA is currently enabled on your account.
+        </p>
+        <button class="btn btn-danger" onclick="disable2FA()">Disable 2FA</button>
+      </div>
+    </div>
+
+    <!-- Security Info -->
+    <div class="card">
+      <p class="section-label">Security Features Active</p>
+      <div class="info-row"><span>Password hashing</span><span class="badge badge-on">bcrypt ✓</span></div>
+      <div class="info-row"><span>SQL injection protection</span><span class="badge badge-on">Active ✓</span></div>
+      <div class="info-row"><span>Session management</span><span class="badge badge-on">Active ✓</span></div>
+      <div class="info-row"><span>Input validation</span><span class="badge badge-on">Active ✓</span></div>
+      <div class="info-row"><span>HttpOnly cookies</span><span class="badge badge-on">Active ✓</span></div>
+      <div class="info-row" style="border-bottom:none;">
+        <span>Two-Factor Auth</span>
+        <span class="badge" id="twoFABadge">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let userTwoFAEnabled = false;
+
+    async function loadUser() {
+      const res = await fetch('/api/me');
+      if(res.status === 401) { window.location.href = '/login.html'; return; }
+      const data = await res.json();
+      const user = data.user;
+
+      document.getElementById('usernameDisplay').textContent = user.username;
+      document.getElementById('emailDisplay').textContent = user.email;
+      document.getElementById('createdAt').textContent = new Date(user.created_at).toLocaleDateString();
+
+      userTwoFAEnabled = user.twofa_enabled === 1;
+      update2FAUI();
+    }
+
+    function update2FAUI() {
+      const badge = document.getElementById('twoFAStatus');
+      const secBadge = document.getElementById('twoFABadge');
+
+      if(userTwoFAEnabled) {
+        badge.innerHTML = '<span class="badge badge-on">Enabled ✓</span>';
+        secBadge.className = 'badge badge-on';
+        secBadge.textContent = 'Enabled ✓';
+        document.getElementById('enable2FASection').style.display = 'none';
+        document.getElementById('disable2FASection').style.display = 'block';
+      } else {
+        badge.innerHTML = '<span class="badge badge-off">Disabled</span>';
+        secBadge.className = 'badge badge-off';
+        secBadge.textContent = 'Disabled';
+        document.getElementById('enable2FASection').style.display = 'block';
+        document.getElementById('disable2FASection').style.display = 'none';
+      }
+    }
+
+    async function setup2FA() {
+      const res = await fetch('/api/setup-2fa');
+      const data = await res.json();
+      if(!data.success) return;
+
+      document.getElementById('qrImage').src = data.qrCode;
+      document.getElementById('secretText').textContent = data.secret;
+      document.getElementById('qrSection').style.display = 'block';
+      document.getElementById('generate2FABtn').style.display = 'none';
+    }
+
+    async function enable2FA() {
+      const token = document.getElementById('verifyOTP').value.trim();
+      clearTwoFAAlerts();
+      if(!token) { show2FAError('Please enter the OTP code.'); return; }
+
+      const res = await fetch('/api/enable-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const data = await res.json();
+      if(!data.success) { show2FAError(data.message); return; }
+
+      show2FASuccess('2FA enabled successfully! 🎉');
+      userTwoFAEnabled = true;
+      setTimeout(() => { update2FAUI(); clearTwoFAAlerts(); }, 1500);
+    }
+
+    async function disable2FA() {
+      if(!confirm('Are you sure you want to disable 2FA?')) return;
+      const res = await fetch('/api/disable-2fa', { method: 'POST' });
+      const data = await res.json();
+      if(data.success) { userTwoFAEnabled = false; update2FAUI(); }
+    }
+
+    async function logout() {
+      await fetch('/api/logout', { method: 'POST' });
+      window.location.href = '/login.html';
+    }
+
+    function show2FAError(msg) {
+      const el = document.getElementById('twoFAError');
+      el.textContent = msg; el.style.display = 'block';
+    }
+
+    function show2FASuccess(msg) {
+      const el = document.getElementById('twoFASuccess');
+      el.textContent = msg; el.style.display = 'block';
+    }
+
+    function clearTwoFAAlerts() {
+      document.getElementById('twoFAError').style.display = 'none';
+      document.getElementById('twoFASuccess').style.display = 'none';
+    }
+
+    loadUser();
+  </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+[
+  {
+    "id": 1780055436151,
+    "username": "Srushti",
+    "email": "moresrushti47@gmail.com",
+    "password": "$2a$12$o4/AC8S.4r31cU5.rO3Ku.9zJrWr7ezHzH2gGfjAs7Qgyj92kTLmS",
+    "twofa_secret": "OZTVM5JPMZBVU5BRFQYFAL3NJROWSZKC",
+    "twofa_enabled": true,
+    "created_at": "2026-05-29T11:50:36.151Z"
+  }
+]

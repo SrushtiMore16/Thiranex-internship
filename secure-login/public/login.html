@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — Secure Login System</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="card">
+    <div class="card-header">
+      <div class="icon">🔐</div>
+      <h1>Welcome back</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <div class="alert alert-error" id="errorAlert"></div>
+    <div class="alert alert-success" id="successAlert"></div>
+
+    <div id="loginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" placeholder="Enter your username" autocomplete="username"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" autocomplete="current-password"/>
+      </div>
+      <button class="btn btn-primary mt-2" onclick="login()">Sign In</button>
+    </div>
+
+    <!-- 2FA Step (hidden initially) -->
+    <div id="twoFAForm" style="display:none;">
+      <p style="font-size:14px; color:var(--text-secondary); margin-bottom:16px; text-align:center;">
+        Open your authenticator app and enter the 6-digit code.
+      </p>
+      <div class="form-group">
+        <label for="otpCode">6-Digit OTP Code</label>
+        <input type="number" id="otpCode" placeholder="000000" maxlength="6" style="text-align:center; font-size:20px; letter-spacing:6px;"/>
+      </div>
+      <button class="btn btn-primary mt-2" onclick="verify2FA()">Verify Code</button>
+      <button class="btn btn-outline mt-1" onclick="backToLogin()">← Back</button>
+    </div>
+
+    <div class="divider mt-2">or</div>
+    <p class="text-center mt-1">
+      Don't have an account? <a href="register.html" class="link">Register</a>
+    </p>
+  </div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      clearAlerts();
+
+      if(!username || !password) { showError('Please fill in all fields.'); return; }
+
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      const data = await res.json();
+
+      if(!data.success) { showError(data.errors?.join(', ') || 'Login failed.'); return; }
+
+      if(data.requires2FA) {
+        document.getElementById('loginForm').style.display = 'none';
+        document.getElementById('twoFAForm').style.display = 'block';
+      } else {
+        window.location.href = '/dashboard.html';
+      }
+    }
+
+    async function verify2FA() {
+      const token = document.getElementById('otpCode').value.trim();
+      clearAlerts();
+
+      if(!token) { showError('Please enter the OTP code.'); return; }
+
+      const res = await fetch('/api/verify-2fa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token })
+      });
+      const data = await res.json();
+
+      if(!data.success) { showError(data.message || 'Invalid OTP.'); return; }
+      window.location.href = '/dashboard.html';
+    }
+
+    function backToLogin() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('twoFAForm').style.display = 'none';
+      clearAlerts();
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('errorAlert');
+      el.textContent = msg; el.style.display = 'block';
+    }
+
+    function clearAlerts() {
+      document.getElementById('errorAlert').style.display = 'none';
+      document.getElementById('successAlert').style.display = 'none';
+    }
+
+    // Allow Enter key
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Enter') {
+        if(document.getElementById('twoFAForm').style.display === 'block') verify2FA();
+        else login();
+      }
+    });
+  </script>
+</body>
+</html>
